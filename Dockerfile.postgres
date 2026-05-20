@@ -1,0 +1,21 @@
+FROM postgres:15
+
+WORKDIR /dedalus
+
+RUN apt-get update && apt-get install -y \
+    wget \
+    git \
+    ca-certificates \
+    build-essential \
+    postgresql-server-dev-15 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --branch REL15_1_5_1 https://github.com/ossc-db/pg_hint_plan.git \
+    && cd pg_hint_plan \
+    && make install \
+    && cd .. \
+    && rm -rf pg_hint_plan
+
+RUN echo "shared_preload_libraries = 'pg_hint_plan'" >> /usr/share/postgresql/postgresql.conf.sample
+
+COPY db/ ./db/

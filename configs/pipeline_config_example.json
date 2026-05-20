@@ -1,0 +1,26 @@
+{
+  "database": {
+    "host": "pg-sampledb",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "name": "sampledb"
+  },
+  "solver": {
+    "backend": "dwave",
+    "solver": "simulated_annealing",
+    "solver_opts": {"mode": "dwave"},
+    "weight_mode": "cardinality",
+    "run_mode": "normal",
+    "explain_format": "txt",
+    "verbose": false,
+    "export": false,
+    "normalize_weights": true,
+    "normalize_after_pruning": true
+  },
+  "query": {
+    "sql": null,
+    "file_path": "db/sampledb/queries/4rel/q3.sql",
+    "output_dir": "output"
+  }
+}

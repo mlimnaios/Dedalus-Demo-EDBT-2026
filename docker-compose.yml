@@ -1,0 +1,84 @@
+services:
+
+  # Container instance for the SAMPLEDB database
+  pg-sampledb:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    container_name: pg-sampledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sampledb
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_sampledb:/var/lib/postgresql/data
+      - ./db/sampledb/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: postgres -c shared_preload_libraries=pg_hint_plan
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "sampledb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    shm_size: ${SHM_SIZE:-128mb}
+
+  # Container instance for JOB benchmark database
+  pg-job:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    container_name: pg-job
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: job
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata_job:/var/lib/postgresql/data
+      - ./db/job/init.sh:/docker-entrypoint-initdb.d/init.sh
+    command: postgres -c shared_preload_libraries=pg_hint_plan
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "job"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    shm_size: ${SHM_SIZE:-128mb}
+
+  # Container instance that hosts the web GUI
+  demo:
+    image: marksterg/dedalus-demo:latest
+    container_name: demo
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - 5001:5000
+    volumes:
+      - ./assets:/dedalus/assets
+      - ./configs:/dedalus/configs
+      - ./db:/dedalus/db
+      - ./output:/dedalus/output
+    working_dir: /dedalus
+    entrypoint: ["python", "webapp.py"]
+    restart: "no"
+
+  # Jupyter server for running demos
+  jupyter:
+    image: marksterg/dedalus-demo:latest
+    container_name: jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./configs:/dedalus/configs
+      - ./notebooks:/dedalus/notebooks
+      - ./db:/dedalus/db
+      - ./output:/dedalus/output
+    working_dir: /dedalus/notebooks
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --NotebookApp.token='' --NotebookApp.password=''
+
+volumes:
+  pgdata_sampledb: # Postgres SAMPLEDB database storage
+  pgdata_job: # Postgres JOB database storage
