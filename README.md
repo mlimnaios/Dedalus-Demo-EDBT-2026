@@ -123,8 +123,6 @@ When connecting from **outside Docker** (your host machine), use localhost with 
 
 3. In the UI or notebook, select a QPU solver (e.g. `Advantage2_system1.12`).
 
-Sign up for a free D-Wave Leap account at [cloud.dwavesys.com/leap](https://cloud.dwavesys.com/leap/).
-
 ## Stopping and Restarting
 
 ```bash
